@@ -126,3 +126,7 @@
 .optionCounterButton:disabled {
   cursor: not-allowed;
 }
+.headerListItem.active {
+  border-bottom: 3px solid white;
+  font-weight: bold;
+}
