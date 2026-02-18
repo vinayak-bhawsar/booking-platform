@@ -7,6 +7,7 @@ import hotelsRoute from "./routes/hotels.js";
 import roomsRoute from "./routes/rooms.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import bookingRoute from "./routes/bookings.js";
 
 dotenv.config();
 const app = express();
@@ -47,6 +48,7 @@ app.use("/api/auth", authRoute);
 app.use("/api/users", usersRoute);
 app.use("/api/hotels", hotelsRoute);
 app.use("/api/rooms", roomsRoute);
+app.use("/api/bookings", bookingRoute);
 
 // ✅ Error Handler
 app.use((err, req, res, next) => {
