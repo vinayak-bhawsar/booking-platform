@@ -1,121 +1,97 @@
 import "./list.css";
 import Navbar from "../../components/navbar/Navbar";
 import Header from "../../components/header/Header";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { format } from "date-fns";
-import { DateRange } from "react-date-range";
 import SearchItem from "../../components/searchItem/SearchItem";
 import useFetch from "../../hooks/useFetch";
 
-const List = () => {
+const List = ({ type }) => {
   const location = useLocation();
-  const [destination] = useState(location.state.destination);
-  const [dates, setDates] = useState(location.state.dates);
-  const [openDate, setOpenDate] = useState(false);
-  const [options] = useState(location.state.options);
-  const [min, setMin] = useState(undefined);
-  const [max, setMax] = useState(undefined);
+  const navigate = useNavigate();
 
-  const { data, loading, error, reFetch } = useFetch(
-    `/hotels?city=${destination}&min=${min || 0 }&max=${max || 999}`
-  );
+  // 🔥 Read values from URL
+  const queryParams = new URLSearchParams(location.search);
 
-  const handleClick = () => {
-    reFetch();
+  const city = queryParams.get("city") || "";
+  const minParam = queryParams.get("min") || 0;
+  const maxParam = queryParams.get("max") || 999;
+
+  const [min, setMin] = useState(minParam);
+  const [max, setMax] = useState(maxParam);
+
+  // 🔥 Dynamic API
+  const apiUrl =
+    type === "cars"
+      ? `/cars`
+      : type === "flights"
+      ? `/flights`
+      : `/hotels?city=${city}&min=${min}&max=${max}`;
+
+  const { data, loading, error } = useFetch(apiUrl);
+
+  // 🔥 Update URL when filter applied
+  const handleFilter = () => {
+    navigate(`/hotels?city=${city}&min=${min}&max=${max}`);
   };
 
   return (
     <div>
       <Navbar />
       <Header type="list" />
+
       <div className="listContainer">
         <div className="listWrapper">
+
+          {/* LEFT SEARCH PANEL */}
           <div className="listSearch">
-            <h1 className="lsTitle">Search</h1>
+            <h1 className="lsTitle">
+              {type ? type.toUpperCase() : "Search"}
+            </h1>
+
             <div className="lsItem">
               <label>Destination</label>
-              <input placeholder={destination} type="text" />
+              <input placeholder={city} type="text" />
             </div>
+
             <div className="lsItem">
-              <label>Check-in Date</label>
-              <span onClick={() => setOpenDate(!openDate)}>{`${format(
-                dates[0].startDate,
-                "MM/dd/yyyy"
-              )} to ${format(dates[0].endDate, "MM/dd/yyyy")}`}</span>
-              {openDate && (
-                <DateRange
-                  onChange={(item) => setDates([item.selection])}
-                  minDate={new Date()}
-                  ranges={dates}
-                />
-              )}
+              <label>Min price</label>
+              <input
+                type="number"
+                value={min}
+                onChange={(e) => setMin(e.target.value)}
+              />
             </div>
+
             <div className="lsItem">
-              <label>Options</label>
-              <div className="lsOptions">
-                <div className="lsOptionItem">
-                  <span className="lsOptionText">
-                    Min price <small>per night</small>
-                  </span>
-                  <input
-                    type="number"
-                    onChange={(e) => setMin(e.target.value)}
-                    className="lsOptionInput"
-                  />
-                </div>
-                <div className="lsOptionItem">
-                  <span className="lsOptionText">
-                    Max price <small>per night</small>
-                  </span>
-                  <input
-                    type="number"
-                    onChange={(e) => setMax(e.target.value)}
-                    className="lsOptionInput"
-                  />
-                </div>
-                <div className="lsOptionItem">
-                  <span className="lsOptionText">Adult</span>
-                  <input
-                    type="number"
-                    min={1}
-                    className="lsOptionInput"
-                    placeholder={options.adult}
-                  />
-                </div>
-                <div className="lsOptionItem">
-                  <span className="lsOptionText">Children</span>
-                  <input
-                    type="number"
-                    min={0}
-                    className="lsOptionInput"
-                    placeholder={options.children}
-                  />
-                </div>
-                <div className="lsOptionItem">
-                  <span className="lsOptionText">Room</span>
-                  <input
-                    type="number"
-                    min={1}
-                    className="lsOptionInput"
-                    placeholder={options.room}
-                  />
-                </div>
-              </div>
+              <label>Max price</label>
+              <input
+                type="number"
+                value={max}
+                onChange={(e) => setMax(e.target.value)}
+              />
             </div>
-            <button onClick={handleClick}>Search</button>
+
+            <button onClick={handleFilter}>
+              Apply Filter
+            </button>
           </div>
+
+          {/* RIGHT RESULT PANEL */}
           <div className="listResult">
             {loading ? (
-              "loading"
+              "Loading..."
+            ) : error ? (
+              "Something went wrong"
+            ) : data && data.length > 0 ? (
+              data.map((item) => (
+                <SearchItem item={item} key={item._id} />
+              ))
             ) : (
-              <>
-                {data.map((item) => (
-                  <SearchItem item={item} key={item._id} />
-                ))}
-              </>
+              <h2>No Data Found</h2>
             )}
           </div>
+
         </div>
       </div>
     </div>

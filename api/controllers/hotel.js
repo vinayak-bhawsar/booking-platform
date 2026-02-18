@@ -33,28 +33,46 @@ export const deleteHotel = async (req, res, next) => {
   }
 };
 
-export const getHotel = async (req, res, next) => {
-  try {
-    const hotel = await Hotel.findById(req.params.id);
-    res.status(200).json(hotel);
-  } catch (err) {
-    next(err);
-  }
-};
-
 export const getHotels = async (req, res, next) => {
-  const { min, max, limit, ...others } = req.query;
+  const { min, max, sort, page = 1, limit = 5, ...others } = req.query;
 
   try {
+    const skip = (page - 1) * limit;
+
     const hotels = await Hotel.find({
       ...others,
       cheapestPrice: {
-        $gt: min ? Number(min) : 1,
-        $lt: max ? Number(max) : 999,
+        $gt: Number(min) || 1,
+        $lt: Number(max) || 999,
       },
-    }).limit(limit ? Number(limit) : 0);
+    })
+      .sort(
+        sort === "price_asc"
+          ? { cheapestPrice: 1 }
+          : sort === "price_desc"
+          ? { cheapestPrice: -1 }
+          : sort === "rating_desc"
+          ? { rating: -1 }
+          : {}
+      )
+      .skip(skip)
+      .limit(Number(limit));
 
-    res.status(200).json(hotels);
+    const total = await Hotel.countDocuments({
+      ...others,
+      cheapestPrice: {
+        $gt: Number(min) || 1,
+        $lt: Number(max) || 999,
+      },
+    });
+
+    res.status(200).json({
+      hotels,
+      total,
+      currentPage: Number(page),
+      totalPages: Math.ceil(total / limit),
+    });
+
   } catch (err) {
     next(err);
   }
