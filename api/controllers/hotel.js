@@ -43,45 +43,18 @@ export const getHotel = async (req, res, next) => {
 };
 
 export const getHotels = async (req, res, next) => {
-  const { min, max, sort, page = 1, limit = 5, ...others } = req.query;
+  const { min, max, limit, ...others } = req.query;
 
   try {
-    const skip = (page - 1) * limit;
-
     const hotels = await Hotel.find({
       ...others,
       cheapestPrice: {
-        $gt: Number(min) || 1,
-        $lt: Number(max) || 999,
+        $gt: min ? Number(min) : 1,
+        $lt: max ? Number(max) : 999,
       },
-    })
-      .sort(
-        sort === "price_asc"
-          ? { cheapestPrice: 1 }
-          : sort === "price_desc"
-          ? { cheapestPrice: -1 }
-          : sort === "rating_desc"
-          ? { rating: -1 }
-          : {}
-      )
-      .skip(skip)
-      .limit(Number(limit));
+    }).limit(limit ? Number(limit) : 0);
 
-    const total = await Hotel.countDocuments({
-      ...others,
-      cheapestPrice: {
-        $gt: Number(min) || 1,
-        $lt: Number(max) || 999,
-      },
-    });
-
-    res.status(200).json({
-      hotels,
-      total,
-      currentPage: Number(page),
-      totalPages: Math.ceil(total / limit),
-    });
-
+    res.status(200).json(hotels);
   } catch (err) {
     next(err);
   }
