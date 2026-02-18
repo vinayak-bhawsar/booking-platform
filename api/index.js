@@ -30,6 +30,10 @@ app.use(cors());
 app.use(cookieParser());
 app.use(express.json());
 
+app.get("/", (req, res) => {
+  res.send("Booking Platform API is Live 🚀");
+});
+
 // ✅ Routes
 app.use("/api/auth", authRoute);
 app.use("/api/users", usersRoute);

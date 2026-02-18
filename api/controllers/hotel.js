@@ -1,6 +1,7 @@
 import Hotel from "../models/Hotel.js";
 import Room from "../models/Room.js";
 
+// ✅ Create Hotel
 export const createHotel = async (req, res, next) => {
   try {
     const newHotel = new Hotel(req.body);
@@ -11,6 +12,7 @@ export const createHotel = async (req, res, next) => {
   }
 };
 
+// ✅ Update Hotel
 export const updateHotel = async (req, res, next) => {
   try {
     const updatedHotel = await Hotel.findByIdAndUpdate(
@@ -24,6 +26,7 @@ export const updateHotel = async (req, res, next) => {
   }
 };
 
+// ✅ Delete Hotel
 export const deleteHotel = async (req, res, next) => {
   try {
     await Hotel.findByIdAndDelete(req.params.id);
@@ -33,6 +36,7 @@ export const deleteHotel = async (req, res, next) => {
   }
 };
 
+// ✅ Get Single Hotel
 export const getHotel = async (req, res, next) => {
   try {
     const hotel = await Hotel.findById(req.params.id);
@@ -42,17 +46,35 @@ export const getHotel = async (req, res, next) => {
   }
 };
 
+// ✅ Get Hotels (WITH FILTER + SORTING + LIMIT)
 export const getHotels = async (req, res, next) => {
-  const { min, max, limit, ...others } = req.query;
+  const { min, max, limit, sort, ...others } = req.query;
 
   try {
-    const hotels = await Hotel.find({
+    // 🔥 Base Query (Filters)
+    let query = Hotel.find({
       ...others,
       cheapestPrice: {
         $gt: min ? Number(min) : 1,
-        $lt: max ? Number(max) : 999,
+        $lt: max ? Number(max) : 999999,
       },
-    }).limit(limit ? Number(limit) : 0);
+    });
+
+    // 🔥 Sorting Logic
+    if (sort === "price_asc") {
+      query = query.sort({ cheapestPrice: 1 });
+    } else if (sort === "price_desc") {
+      query = query.sort({ cheapestPrice: -1 });
+    } else if (sort === "rating") {
+      query = query.sort({ rating: -1 });
+    }
+
+    // 🔥 Limit (Optional)
+    if (limit) {
+      query = query.limit(Number(limit));
+    }
+
+    const hotels = await query;
 
     res.status(200).json(hotels);
   } catch (err) {
@@ -60,6 +82,7 @@ export const getHotels = async (req, res, next) => {
   }
 };
 
+// ✅ Count By City
 export const countByCity = async (req, res, next) => {
   try {
     if (!req.query.cities) {
@@ -80,6 +103,7 @@ export const countByCity = async (req, res, next) => {
   }
 };
 
+// ✅ Count By Type
 export const countByType = async (req, res, next) => {
   try {
     const types = ["hotel", "apartment", "resort", "villa", "cabin"];
@@ -101,6 +125,7 @@ export const countByType = async (req, res, next) => {
   }
 };
 
+// ✅ Get Hotel Rooms
 export const getHotelRooms = async (req, res, next) => {
   try {
     const hotel = await Hotel.findById(req.params.id);
