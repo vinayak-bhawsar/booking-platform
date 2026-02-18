@@ -38,6 +38,9 @@ app.use(express.json());
 app.get("/", (req, res) => {
   res.send("Booking Platform API is Live 🚀");
 });
+app.get("/test-auth", (req, res) => {
+  res.send("Auth route working");
+});
 
 // ✅ Routes
 app.use("/api/auth", authRoute);
