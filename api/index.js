@@ -26,7 +26,12 @@ mongoose.connection.on("disconnected", () => {
 });
 
 // ✅ Middlewares
-app.use(cors());
+app.use(
+  cors({
+    origin: "https://booking-platform-frontend-green.vercel.app",
+    credentials: true,
+  })
+);
 app.use(cookieParser());
 app.use(express.json());
 

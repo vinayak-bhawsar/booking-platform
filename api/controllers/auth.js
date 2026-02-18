@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { createError } from "../utils/error.js";
 import jwt from "jsonwebtoken";
 
+// ✅ REGISTER
 export const register = async (req, res, next) => {
   try {
     const salt = bcrypt.genSaltSync(10);
@@ -14,11 +15,13 @@ export const register = async (req, res, next) => {
     });
 
     await newUser.save();
-    res.status(200).send("User has been created.");
+    res.status(200).json("User has been created.");
   } catch (err) {
     next(err);
   }
 };
+
+// ✅ LOGIN
 export const login = async (req, res, next) => {
   try {
     const user = await User.findOne({ username: req.body.username });
@@ -28,6 +31,7 @@ export const login = async (req, res, next) => {
       req.body.password,
       user.password
     );
+
     if (!isPasswordCorrect)
       return next(createError(400, "Wrong password or username!"));
 
@@ -37,12 +41,16 @@ export const login = async (req, res, next) => {
     );
 
     const { password, isAdmin, ...otherDetails } = user._doc;
+
     res
       .cookie("access_token", token, {
         httpOnly: true,
+        secure: true,          // 🔥 REQUIRED for HTTPS
+        sameSite: "none",      // 🔥 REQUIRED for cross-domain
       })
       .status(200)
       .json({ details: { ...otherDetails }, isAdmin });
+
   } catch (err) {
     next(err);
   }
