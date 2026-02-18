@@ -33,7 +33,7 @@ export const deleteHotel = async (req, res, next) => {
   }
 };
 
-export const getHotels = async (req, res, next) => {
+export const gethotels = async (req, res, next) => {
   const { min, max, sort, page = 1, limit = 5, ...others } = req.query;
 
   try {
