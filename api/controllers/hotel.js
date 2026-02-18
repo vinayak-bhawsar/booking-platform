@@ -48,10 +48,11 @@ export const getHotel = async (req, res, next) => {
 
 // ✅ Get Hotels (WITH FILTER + SORTING + LIMIT)
 export const getHotels = async (req, res, next) => {
-  const { min, max, limit, sort, ...others } = req.query;
+  const { min, max, limit, sort, page = 1, pageSize = 10, ...others } = req.query;
 
   try {
-    // 🔥 Base Query (Filters)
+    const skip = (page - 1) * pageSize;
+
     let query = Hotel.find({
       ...others,
       cheapestPrice: {
@@ -60,7 +61,7 @@ export const getHotels = async (req, res, next) => {
       },
     });
 
-    // 🔥 Sorting Logic
+    // ✅ Sorting
     if (sort === "price_asc") {
       query = query.sort({ cheapestPrice: 1 });
     } else if (sort === "price_desc") {
@@ -69,14 +70,24 @@ export const getHotels = async (req, res, next) => {
       query = query.sort({ rating: -1 });
     }
 
-    // 🔥 Limit (Optional)
-    if (limit) {
-      query = query.limit(Number(limit));
-    }
+    const hotels = await query
+      .skip(skip)
+      .limit(Number(pageSize));
 
-    const hotels = await query;
+    const total = await Hotel.countDocuments({
+      ...others,
+      cheapestPrice: {
+        $gt: min ? Number(min) : 1,
+        $lt: max ? Number(max) : 999999,
+      },
+    });
 
-    res.status(200).json(hotels);
+    res.status(200).json({
+      total,
+      currentPage: Number(page),
+      totalPages: Math.ceil(total / pageSize),
+      hotels,
+    });
   } catch (err) {
     next(err);
   }
