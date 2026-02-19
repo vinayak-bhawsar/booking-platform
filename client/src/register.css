@@ -1,4 +1,4 @@
-.login {
+.registerContainer {
   height: 100vh;
   display: flex;
   justify-content: center;
@@ -6,7 +6,7 @@
   background: linear-gradient(135deg, #003580, #0071c2);
 }
 
-.lContainer {
+.registerCard {
   background: white;
   padding: 40px;
   width: 350px;
@@ -15,28 +15,32 @@
   text-align: center;
 }
 
-.lContainer h1 {
+.registerCard h2 {
   margin-bottom: 25px;
   color: #003580;
 }
 
-.lInput {
+.registerCard form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.registerCard input {
   padding: 10px;
   border-radius: 6px;
   border: 1px solid #ccc;
   font-size: 14px;
   outline: none;
   transition: 0.3s;
-  width: 100%;
 }
 
-.lInput:focus {
+.registerCard input:focus {
   border-color: #0071c2;
   box-shadow: 0 0 5px rgba(0, 113, 194, 0.3);
 }
 
-.lButton {
-  margin-top: 15px;
+.registerCard button {
   padding: 10px;
   background: #0071c2;
   color: white;
@@ -47,11 +51,26 @@
   transition: 0.3s;
 }
 
-.lButton:hover {
+.registerCard button:hover {
   background: #005fa3;
 }
 
-.lButton:disabled {
+.registerCard button:disabled {
   background: #999;
   cursor: not-allowed;
+}
+
+.loginText {
+  margin-top: 15px;
+  font-size: 14px;
+}
+
+.loginText span {
+  color: #0071c2;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.loginText span:hover {
+  text-decoration: underline;
 }

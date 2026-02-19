@@ -25,3 +25,19 @@
   cursor: pointer;
   color: #003580;
 }
+
+.navTabs {
+  display: flex;
+  gap: 20px;
+  margin-left: 40px;
+}
+
+.navTabs a {
+  text-decoration: none;
+  color: white;
+  font-weight: 500;
+}
+
+.activeTab {
+  border-bottom: 2px solid white;
+}

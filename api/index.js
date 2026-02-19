@@ -5,14 +5,15 @@ import authRoute from "./routes/auth.js";
 import usersRoute from "./routes/users.js";
 import hotelsRoute from "./routes/hotels.js";
 import roomsRoute from "./routes/rooms.js";
+import bookingRoute from "./routes/bookings.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import bookingRoute from "./routes/bookings.js";
 
 dotenv.config();
 const app = express();
 
-// ✅ MongoDB Connection Function
+/* ================= DB CONNECTION ================= */
+
 const connect = async () => {
   try {
     await mongoose.connect(process.env.MONGO);
@@ -26,31 +27,50 @@ mongoose.connection.on("disconnected", () => {
   console.log("⚠️ mongoDB disconnected!");
 });
 
-// ✅ Middlewares
+/* ================= CORS CONFIG ================= */
+
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://booking-platform-frontend-green.vercel.app",
+];
+
 app.use(
   cors({
-    origin: "https://booking-platform-frontend-green.vercel.app",
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.indexOf(origin) === -1) {
+        const msg =
+          "The CORS policy for this site does not allow access from the specified Origin.";
+        return callback(new Error(msg), false);
+      }
+      return callback(null, true);
+    },
     credentials: true,
   })
 );
+
+// Handle preflight requests
+app.options("*", cors());
+
+/* ================= MIDDLEWARES ================= */
+
 app.use(cookieParser());
 app.use(express.json());
+
+/* ================= ROUTES ================= */
 
 app.get("/", (req, res) => {
   res.send("Booking Platform API is Live 🚀");
 });
-app.get("/test-auth", (req, res) => {
-  res.send("Auth route working");
-});
 
-// ✅ Routes
 app.use("/api/auth", authRoute);
 app.use("/api/users", usersRoute);
 app.use("/api/hotels", hotelsRoute);
 app.use("/api/rooms", roomsRoute);
 app.use("/api/bookings", bookingRoute);
 
-// ✅ Error Handler
+/* ================= ERROR HANDLER ================= */
+
 app.use((err, req, res, next) => {
   const errorStatus = err.status || 500;
   const errorMessage = err.message || "Something went wrong!";
@@ -61,10 +81,11 @@ app.use((err, req, res, next) => {
   });
 });
 
+/* ================= SERVER START ================= */
+
 const PORT = process.env.PORT || 8800;
 
-// ✅ VERY IMPORTANT — Call connect() when server starts
 app.listen(PORT, () => {
-  connect(); // 🔥 THIS WAS MISSING
+  connect();
   console.log(`🚀 Server running on port ${PORT}`);
 });

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import "./register.css";
 
 const Register = () => {
   const [credentials, setCredentials] = useState({
@@ -20,7 +21,7 @@ const Register = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault(); // 🔥 VERY IMPORTANT
+    e.preventDefault();
     setLoading(true);
 
     try {
@@ -34,11 +35,9 @@ const Register = () => {
         }
       );
 
-      console.log("Register response:", res.data);
       alert("Registration successful!");
       navigate("/login");
     } catch (err) {
-      console.log("Register error:", err.response?.data || err.message);
       alert(
         err.response?.data?.message ||
           "Registration failed. Try different username/email."
@@ -49,45 +48,50 @@ const Register = () => {
   };
 
   return (
-    <div style={{ padding: "50px" }}>
-      <h2>Register</h2>
+    <div className="registerContainer">
+      <div className="registerCard">
+        <h2>Create Account</h2>
 
-      {/* 🔥 FORM wrapper added */}
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          placeholder="Username"
-          id="username"
-          value={credentials.username}
-          onChange={handleChange}
-          required
-        />
-        <br /><br />
+        <form onSubmit={handleSubmit}>
+          <input
+            type="text"
+            placeholder="Username"
+            id="username"
+            value={credentials.username}
+            onChange={handleChange}
+            required
+          />
 
-        <input
-          type="email"
-          placeholder="Email"
-          id="email"
-          value={credentials.email}
-          onChange={handleChange}
-          required
-        />
-        <br /><br />
+          <input
+            type="email"
+            placeholder="Email"
+            id="email"
+            value={credentials.email}
+            onChange={handleChange}
+            required
+          />
 
-        <input
-          type="password"
-          placeholder="Password"
-          id="password"
-          value={credentials.password}
-          onChange={handleChange}
-          required
-        />
-        <br /><br />
+          <input
+            type="password"
+            placeholder="Password"
+            id="password"
+            value={credentials.password}
+            onChange={handleChange}
+            required
+          />
 
-        <button type="submit" disabled={loading}>
-          {loading ? "Registering..." : "Register"}
-        </button>
-      </form>
+          <button type="submit" disabled={loading}>
+            {loading ? "Registering..." : "Register"}
+          </button>
+        </form>
+
+        <p className="loginText">
+          Already have an account?{" "}
+          <span onClick={() => navigate("/login")}>
+            Login
+          </span>
+        </p>
+      </div>
     </div>
   );
 };
