@@ -46,20 +46,30 @@ export const getHotel = async (req, res, next) => {
   }
 };
 
-// ✅ Get Hotels (WITH FILTER + SORTING + LIMIT)
+// ✅ Get Hotels (FILTER + SORT + PAGINATION)
 export const getHotels = async (req, res, next) => {
-  const { min, max, limit, sort, page = 1, pageSize = 10, ...others } = req.query;
-
   try {
-    const skip = (page - 1) * pageSize;
+    const {
+      min,
+      max,
+      sort,
+      page = 1,
+      pageSize = 5,
+      ...filters
+    } = req.query;
 
-    let query = Hotel.find({
-      ...others,
+    // 🔥 Build Clean Filter
+    const queryFilter = {
+      ...filters,
       cheapestPrice: {
         $gt: min ? Number(min) : 1,
         $lt: max ? Number(max) : 999999,
       },
-    });
+    };
+
+    const skip = (Number(page) - 1) * Number(pageSize);
+
+    let query = Hotel.find(queryFilter);
 
     // ✅ Sorting
     if (sort === "price_asc") {
@@ -74,20 +84,15 @@ export const getHotels = async (req, res, next) => {
       .skip(skip)
       .limit(Number(pageSize));
 
-    const total = await Hotel.countDocuments({
-      ...others,
-      cheapestPrice: {
-        $gt: min ? Number(min) : 1,
-        $lt: max ? Number(max) : 999999,
-      },
-    });
+    const total = await Hotel.countDocuments(queryFilter);
 
     res.status(200).json({
       total,
       currentPage: Number(page),
-      totalPages: Math.ceil(total / pageSize),
+      totalPages:  Math.ceil(total / Number(pageSize)),
       hotels,
     });
+
   } catch (err) {
     next(err);
   }
@@ -104,7 +109,7 @@ export const countByCity = async (req, res, next) => {
 
     const list = await Promise.all(
       cities.map((city) =>
-        Hotel.countDocuments({ city: city })
+        Hotel.countDocuments({ city })
       )
     );
 

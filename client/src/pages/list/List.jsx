@@ -12,32 +12,36 @@ const List = ({ type }) => {
 
   const queryParams = new URLSearchParams(location.search);
 
-  const city = queryParams.get("city") || "";
-  const minParam = queryParams.get("min") || 0;
-  const maxParam = queryParams.get("max") || 999;
+  const selectedType = queryParams.get("type") || "";
+
+  // ✅ FIXED DEFAULT VALUES
+  const minParam = queryParams.get("min") || 1;
+  const maxParam = queryParams.get("max") || 999999;
 
   const [min, setMin] = useState(minParam);
   const [max, setMax] = useState(maxParam);
   const [sort, setSort] = useState("");
   const [page, setPage] = useState(1);
 
-  // 🔥 Dynamic API with sorting + pagination
+  // ✅ FINAL API URL
   const apiUrl =
     type === "cars"
       ? `/cars`
       : type === "flights"
       ? `/flights`
-      : `/hotels?city=${city}&min=${min}&max=${max}&sort=${sort}&page=${page}&pageSize=5`;
+      : `/hotels?type=${selectedType}&min=${min}&max=${max}&sort=${sort}&page=${page}&pageSize=5`;
 
   const { data, loading, error } = useFetch(apiUrl);
 
-  // 🔥 Reset page when filter or sort changes
+  // Reset page when filter changes
   useEffect(() => {
     setPage(1);
-  }, [sort, min, max]);
+  }, [sort, min, max, selectedType]);
 
   const handleFilter = () => {
-    navigate(`/hotels?city=${city}&min=${min}&max=${max}`);
+    navigate(
+      `/hotels?type=${selectedType}&min=${min}&max=${max}`
+    );
   };
 
   return (
@@ -48,16 +52,11 @@ const List = ({ type }) => {
       <div className="listContainer">
         <div className="listWrapper">
 
-          {/* LEFT SEARCH PANEL */}
+          {/* LEFT FILTER PANEL */}
           <div className="listSearch">
             <h1 className="lsTitle">
-              {type ? type.toUpperCase() : "Search"}
+              {selectedType ? selectedType.toUpperCase() : "Search"}
             </h1>
-
-            <div className="lsItem">
-              <label>Destination</label>
-              <input placeholder={city} type="text" />
-            </div>
 
             <div className="lsItem">
               <label>Min price</label>
@@ -107,7 +106,7 @@ const List = ({ type }) => {
                   <SearchItem item={item} key={item._id} />
                 ))}
 
-                {/* 🔥 Pagination Buttons */}
+                {/* Pagination */}
                 <div style={{ marginTop: "20px" }}>
                   {Array.from(
                     { length: data.totalPages || 1 },

@@ -24,7 +24,16 @@ const Navbar = () => {
 
         {user ? (
           <div className="navItems">
-            <span className="username">Hi, {user.username}</span>
+            <span className="username">
+              Hi, {user.username}
+            </span>
+
+            <Link to="/my-bookings">
+              <button className="navButton">
+                My Bookings
+              </button>
+            </Link>
+
             <button
               className="navButton"
               onClick={handleLogout}
