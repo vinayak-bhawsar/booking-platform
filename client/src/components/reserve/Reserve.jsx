@@ -72,40 +72,38 @@ const Reserve = ({ setOpen, hotelId, hotel }) => {
     );
   };
 
+  /* ================= UPDATED HANDLE CLICK ================= */
+
   const handleClick = async () => {
     if (!user) {
       navigate("/login");
       return;
     }
 
-    // 🔥 IMPORTANT VALIDATION
-    if (!startDate || !endDate) {
-      alert("Please select dates first from search page.");
-      navigate("/");
-      return;
-    }
-
-    if (selectedRooms.length === 0) {
-      alert("Please select at least one room.");
-      return;
-    }
-
     try {
-      // 1️⃣ Update room availability
-      await Promise.all(
-        selectedRooms.map((roomId) =>
-          axios.put(
-            `https://booking-platform-w5pg.onrender.com/api/rooms/availability/${roomId}`,
-            { dates: alldates },
-            { withCredentials: true }
-          )
-        )
-      );
+      // 🔥 Agar koi room select nahi kiya to first room auto select
+      let roomsToBook = selectedRooms;
 
-      // 2️⃣ Save booking
+      if (roomsToBook.length === 0 && data?.[0]?.roomNumbers?.length > 0) {
+        roomsToBook = [data[0].roomNumbers[0]._id];
+      }
+
+      // 🔥 Availability update only if dates exist
+      if (startDate && endDate) {
+        await Promise.all(
+          roomsToBook.map((roomId) =>
+            axios.put(
+              `https://booking-platform-w5pg.onrender.com/api/rooms/availability/${roomId}`,
+              { dates: alldates },
+              { withCredentials: true }
+            )
+          )
+        );
+      }
+
       const totalPrice =
-        days *
-        selectedRooms.length *
+        (days || 1) *
+        roomsToBook.length *
         (data?.[0]?.price || 0);
 
       await axios.post(
@@ -113,10 +111,10 @@ const Reserve = ({ setOpen, hotelId, hotel }) => {
         {
           hotelId,
           hotelName: hotel?.name,
-          rooms: selectedRooms,
+          rooms: roomsToBook,
           totalPrice,
-          startDate,
-          endDate,
+          startDate: startDate || null,
+          endDate: endDate || null,
         },
         { withCredentials: true }
       );
@@ -130,6 +128,8 @@ const Reserve = ({ setOpen, hotelId, hotel }) => {
       alert("Booking failed");
     }
   };
+
+  /* ======================================================= */
 
   return (
     <div className="reserve">
